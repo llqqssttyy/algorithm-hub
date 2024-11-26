@@ -1,21 +1,43 @@
-// attacks는 [공격 시간, 피해량]
+class Player {
+    isDead = false;
+    
+    constructor(maxHealth, [t, x, y]) {
+        this.health = maxHealth;
+        this.maxHealth = maxHealth;
+        this.recovery = { interval: t, default: x, bonus: y };
+    }
+
+    recover(time) {
+        const stat = this.recovery;
+        const bonus = time >= stat.interval 
+            ? Math.floor(time / stat.interval) * stat.bonus 
+            : 0;
+        const recovery = time * stat.default + bonus;
+        
+        this.health = Math.min(this.health + recovery, this.maxHealth);
+    }
+
+    damaged(amount) {
+        this.health -= amount;
+        if (this.health <= 0) {
+            this.health = 0;
+            this.isDead = true;
+        }
+    }
+}
+
 function solution(bandage, health, attacks) {
-    const [t, x, y] = bandage; // 시연 시간, 초당 회복량, 보너스 회복량;
-    const MAX_HEALTH = health;
-    
-    let curHealth = MAX_HEALTH;
+    const player = new Player(health, bandage);
+
     let lastAttackTiming = 0;
-    
-    for(const [timing, damage] of attacks) {
-        term = timing - lastAttackTiming - 1;
-        
-        const bonus = term >= t ? (Math.floor(term / t) * y) : 0;
-        const cureAmount = term * x + bonus;
-        const health = Math.min(cureAmount + curHealth, MAX_HEALTH) - damage;
-        
-        if (health <= 0) return -1;
-        curHealth = health;
+    for (const [timing, amount] of attacks) {
+        const idle = timing - lastAttackTiming - 1;
+        player.recover(idle);
+        player.damaged(amount);
+
+        if (player.isDead) return -1;
         lastAttackTiming = timing;
     }
-    return curHealth;
+
+    return player.health;
 }
