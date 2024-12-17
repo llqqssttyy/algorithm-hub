@@ -14,6 +14,45 @@
 
 정확성: 50.0<br/>효율성: 50.0<br/>합계: 100.0 / 100.0
 
+### 오답노트
+
+효율성 검사 7, 8번이 통과하지 않아 GPT의 도움을 요청.
+```js
+// while문을 돌 때마다 모든 간선 배열을 다시 순회하므로 O(V*E)의 시간복잡도.
+for (const [src, dest, fare] of fareArr) {
+    const nextFare = curFare + fare;
+
+    if (curNode === src && fares[dest] > nextFare) {
+        fares[dest] = nextFare;
+        minHeap.push({ node: dest, fare: nextFare });
+    }
+    if (curNode === dest && fares[src] > nextFare) {
+        fares[src] = nextFare;
+        minHeap.push({ node: src, fare: nextFare });
+    }
+}
+```
+
+GPT의 코드
+```js
+// curNode와 연결되어 있는 간선들만 탐색.
+for (const [dest, fare] of graph[curNode]) {
+    const nextFare = curFare + fare;
+
+    if (nextFare < fares[dest]) {
+        fares[dest] = nextFare;
+        minHeap.push({ node: dest, fare: nextFare });
+    }
+}
+
+// 위 로직을 위해 fares를 인접 리스트로 변환하는 로직 필요
+const graph = Array.from({ length: n + 1 }, () => []);
+fares.forEach(([src, dest, fare]) => {
+    graph[src].push([dest, fare]);
+    graph[dest].push([src, fare]);
+});
+```
+
 ### 제출 일자
 
 2024년 12월 17일 23:10:53
